@@ -4,7 +4,7 @@ name:
 services:
   TT_BUILD_nodered:
     container_name: TT_nodered
-    image: nodered:latest
+    image: nodered/node-red:latest
     build:
       context: ./services/nodered/.
       args:
@@ -54,7 +54,7 @@ services:
     networks:
      mreza:
       ipv4_address: 10.20.0.31
-  TT_portainer:
+  TT_BUILD_portainer:
     container_name: TT_portainer
     image: portainer/portainer-ce
     restart: unless-stopped
@@ -79,4 +79,4 @@ networks:
       ip_range: 10.20.44.0/24
       gateway: 10.20.0.1
       aux_addresses:
-       srv_ftp: 10.20.55.1  
+       srv_ftp: 10.20.55.1 
