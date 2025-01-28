@@ -1,0 +1,82 @@
+name:
+ tt
+
+services:
+  TT_BUILD_nodered:
+    container_name: TT_nodered
+    image: nodered:latest
+    build:
+      context: ./services/nodered/.
+      args:
+      - DOCKERHUB_TAG=latest
+      - EXTRA_PACKAGES=
+    restart: unless-stopped
+    user: "0"
+    environment:
+    - TZ=${TZ:-Etc/UTC}
+    ports:
+    - "2880:1880"
+    volumes:
+    - ./volumes/nodered/data:/data
+    - ./volumes/nodered/ssh:/root/.ssh
+    networks:
+     mreza:
+      ipv4_address: 10.20.0.11
+  TT_BUILD_nginx:
+    container_name: TT_nginx
+    image: nginx
+    restart: unless-stopped 
+    ports:
+    - "2080:80"
+    networks:
+     mreza:
+      ipv4_address: 10.20.0.99
+  TT_BUILD_grafana:
+    container_name: TT_grafana
+    image: grafana/grafana
+    restart: unless-stopped
+    user: "0"
+    ports:
+    - "2300:3000"
+    environment:
+    - TZ=Etc/UTC
+    - GF_PATHS_DATA=/var/lib/grafana
+    - GF_PATHS_LOGS=/var/log/grafana
+    volumes:
+    - ./volumes/grafana/data:/var/lib/grafana
+    - ./volumes/grafana/log:/var/log/grafana
+    healthcheck:
+      test: ["CMD", "wget", "-O", "/dev/null", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+     mreza:
+      ipv4_address: 10.20.0.31
+  TT_portainer:
+    container_name: TT_portainer
+    image: portainer/portainer-ce
+    restart: unless-stopped
+    ports:
+    - "8000:8000"
+    - "2900:9000"
+    # HTTPS
+    - "9443:9443"
+    volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+    - ./volumes/portainer-ce/data:/data
+    networks:
+     mreza:
+      ipv4_address: 10.20.0.41
+
+networks:
+ mreza: 
+  ipam:
+   driver: default
+   config:
+    - subnet: 10.20.0.0/16
+      ip_range: 10.20.44.0/24
+      gateway: 10.20.0.1
+      aux_addresses:
+       srv_ftp: 10.20.55.1  
